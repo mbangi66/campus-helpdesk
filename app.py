@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from werkzeug.security import generate_password_hash, check_password_hash
-import MySQLdb, os, json
+import os, json
 from config import Config
 
 app = Flask(__name__)
