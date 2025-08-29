@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome, {{ user_name }}!</h1>
+        <p><a href="/submit-ticket">Submit a Ticket</a></p>
+        <p><a href="/ticket-status">View My Tickets</a></p>
+        <p><a href="/logout">Logout</a></p>
+    </div>
+</body>
+</html>
