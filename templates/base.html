@@ -1,0 +1,114 @@
+{% set is_authed = session.get('user_id') is not none %}
+{% set current_role = role or session.get('role') %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>{% block title %}Campus Helpdesk{% endblock %}</title>
+
+  <!-- Tailwind CDN (good for college projects / prototypes) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',400:'#818cf8',
+              500:'#6366f1',600:'#4f46e5',700:'#4338ca',800:'#3730a3',900:'#312e81',950:'#1e1b4b'
+            }
+          },
+          boxShadow: { soft: '0 10px 20px rgba(0,0,0,.06), 0 3px 6px rgba(0,0,0,.04)' }
+        }
+      }
+    }
+  </script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  {% block head %}{% endblock %}
+  <style>
+    /* simple utilities */
+    .container-px { padding-left: 1rem; padding-right: 1rem; }
+    @media (min-width: 1024px) { .container-px { padding-left: 2rem; padding-right: 2rem; } }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+  <!-- Top Nav -->
+  <header class="bg-white shadow-sm sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto container-px">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-3">
+          <a href="{{ url_for('dashboard') if is_authed else url_for('login') }}" class="flex items-center gap-2 group">
+            <svg class="w-8 h-8 text-brand-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <path d="M3 6a3 3 0 0 1 3-3h5a3 3 0 0 1 3 3v1h4a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z"/>
+            </svg>
+            <span class="text-lg font-semibold tracking-tight">Campus Helpdesk</span>
+          </a>
+          {% if is_authed %}
+          <nav class="hidden md:flex items-center gap-1 ml-6">
+            {% set endpoints = {
+              'dashboard': ['dashboard', 'ticket_view'], 
+              'ticket_new': ['ticket_new'], 
+              'kb': ['kb', 'kb_new', 'kb_edit'], 
+              'reports': ['reports'], 
+              'manage_users': ['manage_users']
+            } %}
+            {% set active_class = 'bg-brand-50 text-brand-700' %}
+            {% set inactive_class = 'text-gray-500 hover:bg-gray-100 hover:text-gray-900' %}
+            
+            <a href="{{ url_for('dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium {{ active_class if request.endpoint in endpoints.dashboard else inactive_class }}">Dashboard</a>
+            <a href="{{ url_for('ticket_new') }}" class="px-3 py-2 rounded-md text-sm font-medium {{ active_class if request.endpoint in endpoints.ticket_new else inactive_class }}">New Ticket</a>
+            <a href="{{ url_for('kb') }}" class="px-3 py-2 rounded-md text-sm font-medium {{ active_class if request.endpoint in endpoints.kb else inactive_class }}">Knowledge Base</a>
+            <a href="{{ url_for('reports') }}" class="px-3 py-2 rounded-md text-sm font-medium {{ active_class if request.endpoint in endpoints.reports else inactive_class }}">Reports</a>
+            
+            {% if current_role == 'admin' %}
+              <a href="{{ url_for('manage_users') }}" class="px-3 py-2 rounded-md text-sm font-medium {{ active_class if request.endpoint in endpoints.manage_users else inactive_class }}">Manage Users</a>
+            {% endif %}
+          </nav>
+          {% endif %}
+        </div>
+
+        <div class="flex items-center gap-3">
+          {% if is_authed %}
+            <a href="{{ url_for('ticket_new') }}" class="hidden sm:inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg px-3 py-2 shadow-soft">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M11 5h2v14h-2zM5 11h14v2H5z"/></svg>
+              Create Ticket
+            </a>
+            <a href="{{ url_for('logout') }}" class="text-sm text-gray-600 hover:text-gray-900">Logout</a>
+          {% else %}
+            <a href="{{ url_for('login') }}" class="text-sm text-gray-600 hover:text-gray-900">Login</a>
+          {% endif %}
+          <button class="md:hidden inline-flex items-center justify-center p-2 rounded-md hover:bg-gray-100" x-data="{open:false}" @click="open=!open" aria-label="Open Menu">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Flash messages -->
+  <div class="max-w-7xl mx-auto container-px mt-4 space-y-2">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-800 text-sm">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Main -->
+  <main class="max-w-7xl mx-auto container-px my-6">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="border-t border-gray-200 bg-white">
+    <div class="max-w-7xl mx-auto container-px py-6 text-sm text-gray-500">
+      &copy; {{ 2025 }} Campus Helpdesk – Built with Flask & Tailwind.
+    </div>
+  </footer>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

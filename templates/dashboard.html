@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Campus Helpdesk{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-xl font-semibold">Tickets</h1>
+  <a href="{{ url_for('ticket_new') }}" class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg px-3 py-2 text-sm">
+    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M11 5h2v14h-2zM5 11h14v2H5z"/></svg>
+    New Ticket
+  </a>
+</div>
+
+<form method="GET" action="{{ url_for('dashboard') }}" class="bg-white rounded-2xl shadow-soft p-4 mb-4 flex flex-wrap items-center gap-3 text-sm">
+  <div class="flex-grow">
+    <label for="q" class="sr-only">Search</label>
+    <input type="text" name="q" id="q" placeholder="Search by title..." value="{{ current_filters.q or '' }}" class="w-full rounded-lg border-gray-300 focus:ring-brand-500 focus:border-brand-500">
+  </div>
+  <div>
+    <label for="status" class="sr-only">Status</label>
+    <select name="status" id="status" class="rounded-lg border-gray-300 focus:ring-brand-500 focus:border-brand-500">
+      <option value="">All Statuses</option>
+      <option value="open" {% if current_filters.status == 'open' %}selected{% endif %}>Open</option>
+      <option value="in_progress" {% if current_filters.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+      <option value="closed" {% if current_filters.status == 'closed' %}selected{% endif %}>Closed</option>
+    </select>
+  </div>
+  <div>
+    <label for="category" class="sr-only">Category</label>
+    <select name="category" id="category" class="rounded-lg border-gray-300 focus:ring-brand-500 focus:border-brand-500">
+      <option value="">All Categories</option>
+      {% for cat in categories %}
+      <option value="{{ cat }}" {% if current_filters.category == cat %}selected{% endif %}>{{ cat }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button type="submit" class="bg-gray-800 hover:bg-black text-white font-medium rounded-lg px-4 py-2">Filter</button>
+</form>
+
+<div class="bg-white rounded-2xl shadow-soft overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 text-gray-600">
+        <tr>
+          <th class="text-left px-4 py-3">#</th>
+          <th class="text-left px-4 py-3">Title</th>
+          <th class="text-left px-4 py-3">Status</th>
+          <th class="text-left px-4 py-3">Priority</th>
+          <th class="text-left px-4 py-3">Category</th>
+          <th class="text-left px-4 py-3">Created</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for t in tickets or [] %}
+        <tr class="hover:bg-gray-50">
+          <td class="px-4 py-3 font-medium text-gray-800">{{ t.id }}</td>
+          <td class="px-4 py-3">{{ t.title }}</td>
+          <td class="px-4 py-3">
+            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
+              {% if t.status == 'open' %} bg-green-100 text-green-700
+              {% elif t.status == 'in_progress' %} bg-amber-100 text-amber-700
+              {% elif t.status == 'closed' %} bg-gray-200 text-gray-700
+              {% else %} bg-blue-100 text-blue-700 {% endif %}">
+              {{ t.status or 'open' }}
+            </span>
+          </td>
+          <td class="px-4 py-3">
+            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium
+              {% if t.priority == 'High' %} bg-red-100 text-red-700
+              {% elif t.priority == 'Medium' %} bg-yellow-100 text-yellow-700
+              {% else %} bg-blue-100 text-blue-700 {% endif %}">
+              {{ t.priority or 'Low' }}
+            </span>
+          </td>
+          <td class="px-4 py-3">{{ t.category or '-' }}</td>
+          <td class="px-4 py-3 text-gray-500">{{ t.created_at }}</td>
+          <td class="px-4 py-3 text-right">
+            <a href="{{ url_for('ticket_view', ticket_id=t.id) }}" class="text-brand-700 hover:underline">Open</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="px-4 py-6 text-center text-gray-500">No tickets yet.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

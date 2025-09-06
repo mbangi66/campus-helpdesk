@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Edit Article · Knowledge Base{% endblock %}
+{% block content %}
+<div class="max-w-2xl">
+  <h1 class="text-xl font-semibold mb-4">Edit Article</h1>
+  <form method="POST" class="bg-white rounded-2xl shadow-soft p-6 space-y-4">
+    <div>
+      <label class="block text-sm font-medium mb-1">Title</label>
+      <input name="title" value="{{ article[1] }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2" />
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Content</label>
+      <textarea name="content" rows="12" class="w-full rounded-lg border border-gray-300 px-3 py-2">{{ article[2] }}</textarea>
+    </div>
+    <div class="flex justify-end gap-2">
+      <a href="{{ url_for('kb') }}" class="px-3 py-2 rounded-lg border text-sm">Cancel</a>
+      <button class="bg-gray-900 hover:bg-black text-white rounded-lg px-4 py-2">Update</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

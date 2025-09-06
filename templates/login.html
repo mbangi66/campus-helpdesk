@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Login · Campus Helpdesk{% endblock %}
+{% block content %}
+<div class="grid md:grid-cols-2 gap-8 items-center">
+  <div class="hidden md:block">
+    <img src="https://images.unsplash.com/photo-1523580494863-6f3031224c94?q=80&w=1200&auto=format&fit=crop" alt="Campus" class="rounded-2xl shadow-soft">
+  </div>
+  <div class="bg-white rounded-2xl shadow-soft p-6 md:p-8">
+    <h1 class="text-2xl font-semibold mb-1">Welcome back</h1>
+    <p class="text-sm text-gray-600 mb-6">Sign in to submit and track tickets.</p>
+
+    <form method="POST" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Username</label>
+        <input name="username" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="student123" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Password</label>
+        <input name="password" type="password" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="********" />
+      </div>
+      <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg px-4 py-2.5">Sign in</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual Environment
+venv/
+.venv/
+
+# Instance folder
+instance/
+
+# Database file
+database.db
+*.sqlite3
+GEMINI.md
+# Config file
+config.py

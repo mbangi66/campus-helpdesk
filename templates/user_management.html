@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}User Management{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-xl font-semibold">User Management</h1>
+</div>
+
+<div class="bg-white rounded-2xl shadow-soft overflow-hidden">
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead class="bg-gray-50 text-gray-600">
+        <tr>
+          <th class="text-left px-4 py-3">User ID</th>
+          <th class="text-left px-4 py-3">Username</th>
+          <th class="text-left px-4 py-3">Current Role</th>
+          <th class="text-left px-4 py-3">Change Role</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        {% for user in users or [] %}
+        <tr class="hover:bg-gray-50">
+          <td class="px-4 py-3 font-medium text-gray-800">{{ user.id }}</td>
+          <td class="px-4 py-3">{{ user.username }}</td>
+          <td class="px-4 py-3">{{ user.role }}</td>
+          <td class="px-4 py-3">
+            <form method="POST" action="{{ url_for('manage_users') }}" onsubmit="return confirm('Are you sure you want to change this user\'s role?');">
+              <input type="hidden" name="user_id" value="{{ user.id }}">
+              <div class="flex items-center gap-2">
+                <select name="role" class="rounded-lg border-gray-300 text-sm p-1">
+                  <option value="student" {% if user.role == 'student' %}selected{% endif %}>Student</option>
+                  <option value="agent" {% if user.role == 'agent' %}selected{% endif %}>Agent</option>
+                  <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Admin</option>
+                </select>
+                <button type="submit" class="bg-gray-800 hover:bg-black text-white text-xs font-medium rounded-lg px-3 py-1.5">Update</button>
+              </div>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5" class="px-4 py-6 text-center text-gray-500">No users found.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

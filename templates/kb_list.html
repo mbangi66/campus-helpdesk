@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Knowledge Base · Campus Helpdesk{% endblock %}
+{% block content %}
+<div class="flex items-center justify-between mb-4">
+  <h1 class="text-xl font-semibold">Knowledge Base</h1>
+  {% if role in ['admin','agent'] %}
+  <a href="{{ url_for('kb_new') }}" class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg px-3 py-2 text-sm">New Article</a>
+  {% endif %}
+</div>
+<div class="bg-white rounded-2xl shadow-soft p-6">
+  {% if articles %}
+    <ul class="divide-y divide-gray-100">
+      {% for a in articles %}
+      <li class="py-3 flex items-center justify-between">
+        <div>
+          <div class="font-medium">{{ a[1] }}</div>
+          <div class="text-xs text-gray-500">{{ a[3] }}</div>
+        </div>
+        {% if role in ['admin','agent'] %}
+          <a href="{{ url_for('kb_edit', aid=a[0]) }}" class="text-brand-700 hover:underline text-sm">Edit</a>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-sm text-gray-500">No articles yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

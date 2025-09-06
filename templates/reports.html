@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Reports · Campus Helpdesk{% endblock %}
+
+{% block content %}
+<h1 class="text-xl font-semibold mb-4">Reports</h1>
+<div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+  <div class="bg-white rounded-2xl shadow-soft p-4">
+    <div class="text-xs text-gray-500">Total Tickets</div>
+    <div class="text-2xl font-semibold">{{ metrics.total or 0 }}</div>
+  </div>
+  <div class="bg-white rounded-2xl shadow-soft p-4">
+    <div class="text-xs text-gray-500">Open</div>
+    <div class="text-2xl font-semibold">{{ metrics.open or 0 }}</div>
+  </div>
+  <div class="bg-white rounded-2xl shadow-soft p-4">
+    <div class="text-xs text-gray-500">In Progress</div>
+    <div class="text-2xl font-semibold">{{ metrics.in_progress or 0 }}</div>
+  </div>
+  <div class="bg-white rounded-2xl shadow-soft p-4">
+    <div class="text-xs text-gray-500">Closed</div>
+    <div class="text-2xl font-semibold">{{ metrics.closed or 0 }}</div>
+  </div>
+</div>
+
+<!-- ECharts containers -->
+<div class="grid lg:grid-cols-2 gap-6 mb-6">
+  <div class="bg-white rounded-2xl shadow-soft p-6">
+    <h2 class="text-sm font-semibold mb-3">Tickets by Status</h2>
+    <div id="status-chart" style="width: 100%; height:400px;"></div>
+  </div>
+  <div class="bg-white rounded-2xl shadow-soft p-6">
+    <h2 class="text-sm font-semibold mb-3">Tickets by Category</h2>
+    <div id="category-chart" style="width: 100%; height:400px;"></div>
+  </div>
+</div>
+
+<div class="bg-white rounded-2xl shadow-soft p-6 overflow-x-auto">
+  <h2 class="text-sm font-semibold mb-3">Raw Data: By Category</h2>
+  <table class="min-w-full text-sm">
+    <thead class="bg-gray-50 text-gray-600">
+      <tr><th class="text-left px-4 py-2">Category</th><th class="text-left px-4 py-2">Count</th></tr>
+    </thead>
+    <tbody class="divide-y divide-gray-100">
+      {% for row in by_category or [] %}
+        <tr><td class="px-4 py-2">{{ row.category }}</td><td class="px-4 py-2">{{ row['count'] }}</td></tr>
+      {% else %}
+        <tr><td class="px-4 py-4 text-gray-500" colspan="2">No data.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- ECharts CDN -->
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.3.3/dist/echarts.min.js"></script>
+
+<script>
+  // Chart for Ticket Status (Pie Chart)
+  var statusChartDom = document.getElementById('status-chart');
+  var statusChart = echarts.init(statusChartDom);
+  var statusOption = {
+    tooltip: { trigger: 'item' },
+    legend: {
+      orient: 'vertical',
+      left: 'left',
+    },
+    series: [
+      {
+        name: 'Ticket Status',
+        type: 'pie',
+        radius: '70%',
+        data: {{ status_chart_data | safe }},
+        emphasis: {
+          itemStyle: {
+            shadowBlur: 10,
+            shadowOffsetX: 0,
+            shadowColor: 'rgba(0, 0, 0, 0.5)'
+          }
+        }
+      }
+    ]
+  };
+  statusChart.setOption(statusOption);
+
+  // Chart for Ticket Category (Bar Chart)
+  var categoryChartDom = document.getElementById('category-chart');
+  var categoryChart = echarts.init(categoryChartDom);
+  var categoryOption = {
+    tooltip: { trigger: 'axis' },
+    xAxis: {
+      type: 'category',
+      data: {{ category_chart_labels | safe }}
+    },
+    yAxis: {
+      type: 'value'
+    },
+    series: [
+      {
+        name: 'Ticket Count',
+        type: 'bar',
+        data: {{ category_chart_values | safe }}
+      }
+    ]
+  };
+  categoryChart.setOption(categoryOption);
+
+  // Resize charts on window resize
+  window.addEventListener('resize', function() {
+    statusChart.resize();
+    categoryChart.resize();
+  });
+</script>
+{% endblock %}

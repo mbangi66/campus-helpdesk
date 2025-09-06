@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Submit Ticket</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Submit a Helpdesk Ticket</h1>
+        <form method="post">
+            <label>Subject</label>
+            <input type="text" name="subject" required>
+
+            <label>Description</label>
+            <textarea name="description" rows="5" required></textarea>
+
+            <button type="submit">Submit Ticket</button>
+        </form>
+    </div>
+</body>
+</html>

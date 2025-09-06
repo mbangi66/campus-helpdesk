@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}New Ticket · Campus Helpdesk{% endblock %}
+{% block content %}
+<div class="max-w-2xl">
+  <h1 class="text-xl font-semibold mb-4">Submit a Ticket</h1>
+  <form method="POST" class="bg-white rounded-2xl shadow-soft p-6 space-y-4" enctype="multipart/form-data">
+    <div>
+      <label class="block text-sm font-medium mb-1">Title</label>
+      <input name="title" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Wi‑Fi not working in Lab 3"/>
+    </div>
+    <div>
+      <label class="block text-sm font-medium mb-1">Description</label>
+      <textarea name="description" rows="6" class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500" placeholder="Describe the issue with as many details as possible..."></textarea>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium mb-1">Priority</label>
+        <select name="priority" class="w-full rounded-lg border-gray-300 focus:ring-brand-500 focus:border-brand-500">
+          <option>Low</option>
+          <option selected>Medium</option>
+          <option>High</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Attachment</label>
+        <input type="file" name="attachment" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100">
+      </div>
+    </div>
+    <div class="flex justify-end gap-2">
+      <a href="{{ url_for('dashboard') }}" class="px-3 py-2 rounded-lg border text-sm">Cancel</a>
+      <button class="bg-brand-600 hover:bg-brand-700 text-white font-medium rounded-lg px-4 py-2">Create Ticket</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

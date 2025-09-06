@@ -1,0 +1,42 @@
+{
+  "IT Support": [
+    "wifi",
+    "internet",
+    "password",
+    "network",
+    "email",
+    "login",
+    "printer",
+    "lab"
+  ],
+  "Academics": [
+    "grade",
+    "marks",
+    "result",
+    "exam",
+    "course",
+    "enrollment",
+    "attendance"
+  ],
+  "Accounts": [
+    "fee",
+    "payment",
+    "receipt",
+    "scholarship",
+    "refund"
+  ],
+  "Hostel": [
+    "room",
+    "hostel",
+    "mess",
+    "food",
+    "warden",
+    "water",
+    "electricity"
+  ],
+  "General": [
+    "query",
+    "help",
+    "support"
+  ]
+}
