@@ -1,111 +1,236 @@
 {% set is_authed = session.get('user_id') is not none %}
-{% set current_role = role or session.get('role') %}
+{% set current_role = session.get('role') %}
+{% set current_username = session.get('username', '') %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" x-data="{ darkMode: localStorage.getItem('dark') === 'true', mobileMenu: false }"
+      x-init="$watch('darkMode', v => { localStorage.setItem('dark', v); })"
+      :class="{ 'dark': darkMode }">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>{% block title %}Campus Helpdesk{% endblock %}</title>
 
-  <!-- Tailwind CDN (good for college projects / prototypes) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&display=swap" rel="stylesheet">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
+      darkMode: 'class',
       theme: {
         extend: {
+          fontFamily: { sans: ['DM Sans', 'system-ui', 'sans-serif'] },
           colors: {
             brand: {
-              50:'#eef2ff',100:'#e0e7ff',200:'#c7d2fe',300:'#a5b4fc',400:'#818cf8',
-              500:'#6366f1',600:'#4f46e5',700:'#4338ca',800:'#3730a3',900:'#312e81',950:'#1e1b4b'
+              50:'#f0fdfa',100:'#ccfbf1',200:'#99f6e4',300:'#5eead4',400:'#2dd4bf',
+              500:'#14b8a6',600:'#0d9488',700:'#0f766e',800:'#115e59',900:'#134e4a',950:'#042f2e'
+            },
+            accent: {
+              50:'#fff7ed',100:'#ffedd5',200:'#fed7aa',300:'#fdba74',400:'#fb923c',
+              500:'#f97316',600:'#ea580c',700:'#c2410c',800:'#9a3412',900:'#7c2d12'
+            },
+            surface: {
+              50:'#f8fafc',100:'#f1f5f9',200:'#e2e8f0',800:'#1e293b',900:'#0f172a',950:'#020617'
             }
           },
-          boxShadow: { soft: '0 10px 20px rgba(0,0,0,.06), 0 3px 6px rgba(0,0,0,.04)' }
+          boxShadow: {
+            soft: '0 1px 3px 0 rgb(0 0 0 / 0.04), 0 1px 2px -1px rgb(0 0 0 / 0.04)',
+            card: '0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05)',
+            elevated: '0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.05)',
+          },
+          animation: {
+            'fade-in': 'fadeIn 0.4s ease-out',
+            'slide-up': 'slideUp 0.4s ease-out',
+            'slide-down': 'slideDown 0.3s ease-out',
+          },
+          keyframes: {
+            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+            slideUp: { '0%': { opacity: '0', transform: 'translateY(12px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+            slideDown: { '0%': { opacity: '0', transform: 'translateY(-8px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+          }
         }
       }
     }
   </script>
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
   {% block head %}{% endblock %}
-  <style>
-    /* simple utilities */
-    .container-px { padding-left: 1rem; padding-right: 1rem; }
-    @media (min-width: 1024px) { .container-px { padding-left: 2rem; padding-right: 2rem; } }
-  </style>
 </head>
-<body class="min-h-screen bg-gray-50 text-gray-900">
-  <!-- Top Nav -->
-  <header class="bg-white shadow-sm sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto container-px">
+<body class="min-h-screen flex flex-col bg-surface-50 dark:bg-surface-950 text-gray-900 dark:text-gray-100 font-sans transition-colors duration-300">
+
+  <!-- ==================== TOP NAV ==================== -->
+  <header class="sticky top-0 z-50 bg-white/80 dark:bg-surface-900/80 backdrop-blur-xl border-b border-gray-200/60 dark:border-gray-700/40">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
-        <div class="flex items-center gap-3">
-          <a href="{{ url_for('dashboard') if is_authed else url_for('login') }}" class="flex items-center gap-2 group">
-            <svg class="w-8 h-8 text-brand-600" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path d="M3 6a3 3 0 0 1 3-3h5a3 3 0 0 1 3 3v1h4a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z"/>
-            </svg>
-            <span class="text-lg font-semibold tracking-tight">Campus Helpdesk</span>
+
+        <div class="flex items-center gap-2">
+          <a href="{{ url_for('landing') if not is_authed else url_for('dashboard') }}" class="flex items-center gap-2.5 group shrink-0">
+            <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center shadow-lg shadow-brand-500/20 group-hover:shadow-brand-500/40 transition-shadow">
+              <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </div>
+            <span class="text-lg font-bold tracking-tight hidden sm:block">Campus<span class="text-brand-600 dark:text-brand-400">Desk</span></span>
           </a>
+
           {% if is_authed %}
-          <nav class="hidden md:flex items-center gap-1 ml-6">
-            {% set endpoints = {
-              'dashboard': ['dashboard', 'ticket_view'], 
-              'ticket_new': ['ticket_new'], 
-              'kb': ['kb', 'kb_new', 'kb_edit'], 
-              'reports': ['reports'], 
-              'manage_users': ['manage_users']
-            } %}
-            {% set active_class = 'bg-brand-50 text-brand-700' %}
-            {% set inactive_class = 'text-gray-500 hover:bg-gray-100 hover:text-gray-900' %}
-            
-            <a href="{{ url_for('dashboard') }}" class="px-3 py-2 rounded-md text-sm font-medium {{ active_class if request.endpoint in endpoints.dashboard else inactive_class }}">Dashboard</a>
-            <a href="{{ url_for('ticket_new') }}" class="px-3 py-2 rounded-md text-sm font-medium {{ active_class if request.endpoint in endpoints.ticket_new else inactive_class }}">New Ticket</a>
-            <a href="{{ url_for('kb') }}" class="px-3 py-2 rounded-md text-sm font-medium {{ active_class if request.endpoint in endpoints.kb else inactive_class }}">Knowledge Base</a>
-            <a href="{{ url_for('reports') }}" class="px-3 py-2 rounded-md text-sm font-medium {{ active_class if request.endpoint in endpoints.reports else inactive_class }}">Reports</a>
-            
+          <nav class="hidden md:flex items-center ml-8 gap-1">
+            {% set nav_items = [
+              ('dashboard', 'Dashboard', ['dashboard', 'ticket_view']),
+              ('ticket_new', 'New Ticket', ['ticket_new']),
+              ('kb', 'Knowledge Base', ['kb', 'kb_new', 'kb_edit']),
+              ('reports', 'Reports', ['reports'])
+            ] %}
+            {% for endpoint, label, active_eps in nav_items %}
+            <a href="{{ url_for(endpoint) }}"
+               class="relative px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
+               {% if request.endpoint in active_eps %}
+                 text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/50
+               {% else %}
+                 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-surface-800
+               {% endif %}">
+              {{ label }}
+            </a>
+            {% endfor %}
             {% if current_role == 'admin' %}
-              <a href="{{ url_for('manage_users') }}" class="px-3 py-2 rounded-md text-sm font-medium {{ active_class if request.endpoint in endpoints.manage_users else inactive_class }}">Manage Users</a>
+            <a href="{{ url_for('manage_users') }}"
+               class="relative px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
+               {% if request.endpoint == 'manage_users' %}
+                 text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/50
+               {% else %}
+                 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-surface-800
+               {% endif %}">
+              Users
+            </a>
             {% endif %}
           </nav>
           {% endif %}
         </div>
 
-        <div class="flex items-center gap-3">
-          {% if is_authed %}
-            <a href="{{ url_for('ticket_new') }}" class="hidden sm:inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium rounded-lg px-3 py-2 shadow-soft">
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M11 5h2v14h-2zM5 11h14v2H5z"/></svg>
-              Create Ticket
-            </a>
-            <a href="{{ url_for('logout') }}" class="text-sm text-gray-600 hover:text-gray-900">Logout</a>
-          {% else %}
-            <a href="{{ url_for('login') }}" class="text-sm text-gray-600 hover:text-gray-900">Login</a>
-          {% endif %}
-          <button class="md:hidden inline-flex items-center justify-center p-2 rounded-md hover:bg-gray-100" x-data="{open:false}" @click="open=!open" aria-label="Open Menu">
-            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="currentColor"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+        <div class="flex items-center gap-2">
+          <!-- Dark mode toggle -->
+          <button @click="darkMode = !darkMode"
+                  class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-surface-800 transition-colors"
+                  :title="darkMode ? 'Light mode' : 'Dark mode'">
+            <svg x-show="!darkMode" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+            <svg x-show="darkMode" x-cloak class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
           </button>
+
+          {% if is_authed %}
+          <!-- Notification bell -->
+          {% if unread_count is defined and unread_count > 0 %}
+          <a href="{{ url_for('notifications') }}" class="relative p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-surface-800 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            <span class="absolute -top-0.5 -right-0.5 w-5 h-5 bg-accent-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">{{ unread_count }}</span>
+          </a>
+          {% else %}
+          <a href="{{ url_for('notifications') }}" class="p-2 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-surface-800 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          </a>
+          {% endif %}
+
+          <!-- Create ticket CTA -->
+          <a href="{{ url_for('ticket_new') }}"
+             class="hidden sm:inline-flex items-center gap-2 bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white text-sm font-medium rounded-xl px-4 py-2 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 transition-all duration-200">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            New Ticket
+          </a>
+
+          <!-- User menu -->
+          <div x-data="{ open: false }" class="relative">
+            <button @click="open = !open" class="flex items-center gap-2 pl-2 pr-3 py-1.5 rounded-xl hover:bg-gray-100 dark:hover:bg-surface-800 transition-colors">
+              <img src="https://api.dicebear.com/8.x/initials/svg?seed={{ current_username }}&backgroundColor=0d9488&textColor=ffffff&fontSize=40" alt="" class="w-8 h-8 rounded-full">
+              <span class="hidden sm:block text-sm font-medium">{{ current_username }}</span>
+              <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+            <div x-show="open" @click.away="open = false" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95 -translate-y-1" x-transition:enter-end="opacity-100 scale-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95"
+                 class="absolute right-0 mt-2 w-56 bg-white dark:bg-surface-800 rounded-xl shadow-elevated border border-gray-200 dark:border-gray-700 py-2 z-50" x-cloak>
+              <div class="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
+                <p class="text-sm font-semibold">{{ current_username }}</p>
+                <p class="text-xs text-gray-500 dark:text-gray-400 capitalize">{{ current_role }} Account</p>
+              </div>
+              <a href="{{ url_for('dashboard') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-surface-700">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+                Dashboard
+              </a>
+              <a href="{{ url_for('notifications') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-surface-700">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                Notifications
+              </a>
+              <div class="border-t border-gray-100 dark:border-gray-700 mt-1 pt-1">
+                <a href="{{ url_for('logout') }}" class="flex items-center gap-2 px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/20">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                  Sign out
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mobile hamburger -->
+          <button @click="mobileMenu = !mobileMenu" class="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-surface-800 transition-colors" aria-label="Toggle menu">
+            <svg x-show="!mobileMenu" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            <svg x-show="mobileMenu" x-cloak class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+          {% else %}
+          <a href="{{ url_for('login') }}" class="text-sm font-medium text-gray-600 dark:text-gray-300 hover:text-brand-600 dark:hover:text-brand-400 transition-colors">Sign in</a>
+          <a href="{{ url_for('register') }}" class="bg-gradient-to-r from-brand-600 to-brand-700 text-white text-sm font-medium rounded-xl px-4 py-2 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 transition-all">Get Started</a>
+          {% endif %}
         </div>
       </div>
     </div>
+
+    <!-- Mobile nav -->
+    {% if is_authed %}
+    <div x-show="mobileMenu" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150"
+         class="md:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-surface-900 px-4 py-3 space-y-1" x-cloak>
+      <a href="{{ url_for('dashboard') }}" class="block px-3 py-2.5 rounded-lg text-sm font-medium {% if request.endpoint in ['dashboard','ticket_view'] %}text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/50{% else %}text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-surface-800{% endif %}">Dashboard</a>
+      <a href="{{ url_for('ticket_new') }}" class="block px-3 py-2.5 rounded-lg text-sm font-medium {% if request.endpoint == 'ticket_new' %}text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/50{% else %}text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-surface-800{% endif %}">New Ticket</a>
+      <a href="{{ url_for('kb') }}" class="block px-3 py-2.5 rounded-lg text-sm font-medium {% if request.endpoint in ['kb','kb_new','kb_edit'] %}text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/50{% else %}text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-surface-800{% endif %}">Knowledge Base</a>
+      <a href="{{ url_for('reports') }}" class="block px-3 py-2.5 rounded-lg text-sm font-medium {% if request.endpoint == 'reports' %}text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/50{% else %}text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-surface-800{% endif %}">Reports</a>
+      <a href="{{ url_for('notifications') }}" class="block px-3 py-2.5 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-surface-800">Notifications</a>
+      {% if current_role == 'admin' %}
+      <a href="{{ url_for('manage_users') }}" class="block px-3 py-2.5 rounded-lg text-sm font-medium {% if request.endpoint == 'manage_users' %}text-brand-700 dark:text-brand-300 bg-brand-50 dark:bg-brand-950/50{% else %}text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-surface-800{% endif %}">Manage Users</a>
+      {% endif %}
+    </div>
+    {% endif %}
   </header>
 
   <!-- Flash messages -->
-  <div class="max-w-7xl mx-auto container-px mt-4 space-y-2">
-    {% with messages = get_flashed_messages() %}
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 space-y-2">
+    {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
-        {% for msg in messages %}
-          <div class="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-800 text-sm">{{ msg }}</div>
+        {% for category, msg in messages %}
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)" x-transition:leave="transition ease-in duration-300" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2"
+             class="animate-slide-down rounded-xl px-4 py-3 text-sm flex items-center justify-between
+             {% if category == 'error' %}bg-red-50 dark:bg-red-950/30 text-red-800 dark:text-red-300 border border-red-200 dark:border-red-800
+             {% elif category == 'warning' %}bg-amber-50 dark:bg-amber-950/30 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800
+             {% else %}bg-emerald-50 dark:bg-emerald-950/30 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800{% endif %}">
+          <span>{{ msg }}</span>
+          <button @click="show = false" class="ml-3 opacity-60 hover:opacity-100"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+        </div>
         {% endfor %}
       {% endif %}
     {% endwith %}
   </div>
 
   <!-- Main -->
-  <main class="max-w-7xl mx-auto container-px my-6">
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 animate-fade-in">
     {% block content %}{% endblock %}
   </main>
 
-  <footer class="border-t border-gray-200 bg-white">
-    <div class="max-w-7xl mx-auto container-px py-6 text-sm text-gray-500">
-      &copy; {{ 2025 }} Campus Helpdesk – Built with Flask & Tailwind.
+  <!-- Footer -->
+  <footer class="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-surface-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center">
+            <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          </div>
+          <span class="text-sm font-semibold">CampusDesk</span>
+        </div>
+        <p class="text-sm text-gray-500 dark:text-gray-400">&copy; 2026 Campus Helpdesk System. All rights reserved.</p>
+      </div>
     </div>
   </footer>
 

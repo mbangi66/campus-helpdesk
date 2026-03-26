@@ -1,114 +1,137 @@
 {% extends "base.html" %}
-{% block title %}Reports · Campus Helpdesk{% endblock %}
+{% block title %}Reports - Campus Helpdesk{% endblock %}
 
 {% block content %}
-<h1 class="text-xl font-semibold mb-4">Reports</h1>
-<div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-  <div class="bg-white rounded-2xl shadow-soft p-4">
-    <div class="text-xs text-gray-500">Total Tickets</div>
-    <div class="text-2xl font-semibold">{{ metrics.total or 0 }}</div>
+<div class="mb-6">
+  <h1 class="text-2xl font-bold">Reports & Analytics</h1>
+  <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Overview of helpdesk performance</p>
+</div>
+<div class="flex justify-end mb-6">
+  <a href="{{ url_for('export_csv') }}" class="inline-flex items-center gap-2 bg-white dark:bg-surface-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-surface-700 text-sm font-medium rounded-xl px-4 py-2.5 transition-colors">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+    Export CSV
+  </a>
+</div>
+
+<!-- Metric cards -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+  {% set metric_items = [
+    ('Total Tickets', metrics.total, 'from-brand-500 to-brand-600', 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2'),
+    ('Open', metrics.open, 'from-emerald-500 to-emerald-600', 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'),
+    ('In Progress', metrics.in_progress, 'from-amber-500 to-orange-500', 'M13 10V3L4 14h7v7l9-11h-7z'),
+    ('Resolved', metrics.closed, 'from-violet-500 to-purple-600', 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z')
+  ] %}
+  {% for label, value, gradient, icon in metric_items %}
+  <div class="bg-white dark:bg-surface-800 rounded-2xl shadow-card border border-gray-200/60 dark:border-gray-700/40 p-5 card-hover stagger-item">
+    <div class="flex items-center justify-between mb-3">
+      <div class="w-11 h-11 rounded-xl bg-gradient-to-br {{ gradient }} flex items-center justify-center shadow-sm">
+        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ icon }}"/></svg>
+      </div>
+    </div>
+    <p class="text-3xl font-bold">{{ value or 0 }}</p>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ label }}</p>
   </div>
-  <div class="bg-white rounded-2xl shadow-soft p-4">
-    <div class="text-xs text-gray-500">Open</div>
-    <div class="text-2xl font-semibold">{{ metrics.open or 0 }}</div>
+  {% endfor %}
+</div>
+
+<!-- Charts -->
+<div class="grid lg:grid-cols-2 gap-6 mb-8">
+  <div class="bg-white dark:bg-surface-800 rounded-2xl shadow-card border border-gray-200/60 dark:border-gray-700/40 p-6">
+    <h2 class="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Tickets by Status</h2>
+    <div id="status-chart" style="width:100%;height:320px;"></div>
   </div>
-  <div class="bg-white rounded-2xl shadow-soft p-4">
-    <div class="text-xs text-gray-500">In Progress</div>
-    <div class="text-2xl font-semibold">{{ metrics.in_progress or 0 }}</div>
-  </div>
-  <div class="bg-white rounded-2xl shadow-soft p-4">
-    <div class="text-xs text-gray-500">Closed</div>
-    <div class="text-2xl font-semibold">{{ metrics.closed or 0 }}</div>
+  <div class="bg-white dark:bg-surface-800 rounded-2xl shadow-card border border-gray-200/60 dark:border-gray-700/40 p-6">
+    <h2 class="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-4">Tickets by Category</h2>
+    <div id="category-chart" style="width:100%;height:320px;"></div>
   </div>
 </div>
 
-<!-- ECharts containers -->
-<div class="grid lg:grid-cols-2 gap-6 mb-6">
-  <div class="bg-white rounded-2xl shadow-soft p-6">
-    <h2 class="text-sm font-semibold mb-3">Tickets by Status</h2>
-    <div id="status-chart" style="width: 100%; height:400px;"></div>
+<!-- Data table -->
+<div class="bg-white dark:bg-surface-800 rounded-2xl shadow-card border border-gray-200/60 dark:border-gray-700/40 overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+    <h2 class="text-sm font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Category Breakdown</h2>
   </div>
-  <div class="bg-white rounded-2xl shadow-soft p-6">
-    <h2 class="text-sm font-semibold mb-3">Tickets by Category</h2>
-    <div id="category-chart" style="width: 100%; height:400px;"></div>
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead>
+        <tr class="border-b border-gray-200 dark:border-gray-700">
+          <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Category</th>
+          <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tickets</th>
+          <th class="text-left px-6 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Distribution</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100 dark:divide-gray-700/50">
+        {% for row in by_category or [] %}
+        <tr class="hover:bg-gray-50 dark:hover:bg-surface-800/50">
+          <td class="px-6 py-3.5 font-medium">{{ row.category }}</td>
+          <td class="px-6 py-3.5">
+            <span class="inline-flex items-center justify-center bg-brand-50 dark:bg-brand-900/20 text-brand-700 dark:text-brand-400 rounded-lg px-2.5 py-0.5 text-xs font-semibold">{{ row['count'] }}</span>
+          </td>
+          <td class="px-6 py-3.5 w-1/3">
+            <div class="flex items-center gap-3">
+              <div class="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-brand-500 to-brand-600 rounded-full" style="width: {{ (row['count'] / metrics.total * 100) if metrics.total else 0 }}%"></div>
+              </div>
+              <span class="text-xs text-gray-500 dark:text-gray-400 w-10 text-right">{{ ((row['count'] / metrics.total * 100) | round(1)) if metrics.total else 0 }}%</span>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td class="px-6 py-8 text-gray-500 dark:text-gray-400 text-center" colspan="3">No data available</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
-</div>
-
-<div class="bg-white rounded-2xl shadow-soft p-6 overflow-x-auto">
-  <h2 class="text-sm font-semibold mb-3">Raw Data: By Category</h2>
-  <table class="min-w-full text-sm">
-    <thead class="bg-gray-50 text-gray-600">
-      <tr><th class="text-left px-4 py-2">Category</th><th class="text-left px-4 py-2">Count</th></tr>
-    </thead>
-    <tbody class="divide-y divide-gray-100">
-      {% for row in by_category or [] %}
-        <tr><td class="px-4 py-2">{{ row.category }}</td><td class="px-4 py-2">{{ row['count'] }}</td></tr>
-      {% else %}
-        <tr><td class="px-4 py-4 text-gray-500" colspan="2">No data.</td></tr>
-      {% endfor %}
-    </tbody>
-  </table>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<!-- ECharts CDN -->
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.3.3/dist/echarts.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
 <script>
-  // Chart for Ticket Status (Pie Chart)
-  var statusChartDom = document.getElementById('status-chart');
-  var statusChart = echarts.init(statusChartDom);
-  var statusOption = {
-    tooltip: { trigger: 'item' },
-    legend: {
-      orient: 'vertical',
-      left: 'left',
-    },
-    series: [
-      {
-        name: 'Ticket Status',
-        type: 'pie',
-        radius: '70%',
-        data: {{ status_chart_data | safe }},
-        emphasis: {
-          itemStyle: {
-            shadowBlur: 10,
-            shadowOffsetX: 0,
-            shadowColor: 'rgba(0, 0, 0, 0.5)'
-          }
-        }
-      }
-    ]
-  };
-  statusChart.setOption(statusOption);
+  var isDark = document.documentElement.classList.contains('dark');
+  var textColor = isDark ? '#94a3b8' : '#64748b';
+  var bgColor = 'transparent';
 
-  // Chart for Ticket Category (Bar Chart)
-  var categoryChartDom = document.getElementById('category-chart');
-  var categoryChart = echarts.init(categoryChartDom);
-  var categoryOption = {
-    tooltip: { trigger: 'axis' },
-    xAxis: {
-      type: 'category',
-      data: {{ category_chart_labels | safe }}
-    },
-    yAxis: {
-      type: 'value'
-    },
-    series: [
-      {
-        name: 'Ticket Count',
-        type: 'bar',
-        data: {{ category_chart_values | safe }}
-      }
-    ]
-  };
-  categoryChart.setOption(categoryOption);
-
-  // Resize charts on window resize
-  window.addEventListener('resize', function() {
-    statusChart.resize();
-    categoryChart.resize();
+  // Status pie chart
+  var statusChart = echarts.init(document.getElementById('status-chart'));
+  statusChart.setOption({
+    tooltip: { trigger: 'item', backgroundColor: isDark ? '#1e293b' : '#fff', borderColor: isDark ? '#334155' : '#e2e8f0', textStyle: { color: isDark ? '#e2e8f0' : '#1e293b' } },
+    legend: { bottom: 0, textStyle: { color: textColor } },
+    color: ['#10b981', '#f59e0b', '#0d9488', '#8b5cf6'],
+    series: [{
+      name: 'Status',
+      type: 'pie',
+      radius: ['45%', '70%'],
+      center: ['50%', '45%'],
+      itemStyle: { borderRadius: 8, borderColor: isDark ? '#0f172a' : '#fff', borderWidth: 3 },
+      label: { show: false },
+      emphasis: { label: { show: true, fontSize: 14, fontWeight: 'bold' } },
+      data: {{ status_chart_data | safe }}
+    }]
   });
+
+  // Category bar chart
+  var catChart = echarts.init(document.getElementById('category-chart'));
+  catChart.setOption({
+    tooltip: { trigger: 'axis', backgroundColor: isDark ? '#1e293b' : '#fff', borderColor: isDark ? '#334155' : '#e2e8f0', textStyle: { color: isDark ? '#e2e8f0' : '#1e293b' } },
+    grid: { left: '3%', right: '4%', bottom: '3%', containLabel: true },
+    xAxis: { type: 'category', data: {{ category_chart_labels | safe }}, axisLabel: { color: textColor, fontSize: 11 }, axisLine: { lineStyle: { color: isDark ? '#334155' : '#e2e8f0' } } },
+    yAxis: { type: 'value', axisLabel: { color: textColor }, splitLine: { lineStyle: { color: isDark ? '#1e293b' : '#f1f5f9' } } },
+    series: [{
+      name: 'Tickets',
+      type: 'bar',
+      barWidth: '50%',
+      itemStyle: {
+        borderRadius: [6, 6, 0, 0],
+        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+          { offset: 0, color: '#14b8a6' },
+          { offset: 1, color: '#0d9488' }
+        ])
+      },
+      data: {{ category_chart_values | safe }}
+    }]
+  });
+
+  window.addEventListener('resize', function() { statusChart.resize(); catChart.resize(); });
 </script>
 {% endblock %}

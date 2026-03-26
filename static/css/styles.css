@@ -1,47 +1,116 @@
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    padding: 20px;
+/* ===== Campus Helpdesk - Custom Styles ===== */
+
+/* Hide x-cloak elements until Alpine initializes */
+[x-cloak] { display: none !important; }
+
+/* Smooth page transitions */
+* { scroll-behavior: smooth; }
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+.dark ::-webkit-scrollbar-thumb { background: #475569; }
+.dark ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+/* Card hover effects */
+.card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px -6px rgb(0 0 0 / 0.1), 0 4px 8px -4px rgb(0 0 0 / 0.06);
 }
 
-.container {
-    max-width: 600px;
-    margin: auto;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+/* Gradient text utility */
+.text-gradient {
+  background: linear-gradient(135deg, #0d9488, #f97316);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-h1, h2 {
-    text-align: center;
-    color: #333;
+/* Pulse dot animation for status indicators */
+.pulse-dot {
+  position: relative;
+}
+.pulse-dot::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -12px;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: pulse-ring 2s ease-out infinite;
+}
+@keyframes pulse-ring {
+  0% { box-shadow: 0 0 0 0 currentColor; opacity: 1; }
+  100% { box-shadow: 0 0 0 8px currentColor; opacity: 0; }
 }
 
-form label {
-    display: block;
-    margin-top: 10px;
+/* Table row transitions */
+tbody tr {
+  transition: background-color 0.15s ease;
 }
 
-form input, form textarea, form select {
-    width: 100%;
-    padding: 8px;
-    margin-top: 5px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+/* Input focus ring animation */
+input:focus, textarea:focus, select:focus {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-button {
-    background-color: #007bff;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    width: 100%;
+/* Stagger animation for lists */
+.stagger-item { animation: slideUp 0.4s ease-out both; }
+.stagger-item:nth-child(1) { animation-delay: 0.03s; }
+.stagger-item:nth-child(2) { animation-delay: 0.06s; }
+.stagger-item:nth-child(3) { animation-delay: 0.09s; }
+.stagger-item:nth-child(4) { animation-delay: 0.12s; }
+.stagger-item:nth-child(5) { animation-delay: 0.15s; }
+.stagger-item:nth-child(6) { animation-delay: 0.18s; }
+.stagger-item:nth-child(7) { animation-delay: 0.21s; }
+.stagger-item:nth-child(8) { animation-delay: 0.24s; }
+.stagger-item:nth-child(9) { animation-delay: 0.27s; }
+.stagger-item:nth-child(10) { animation-delay: 0.3s; }
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-button:hover {
-    background-color: #0056b3;
+/* Badge shimmer on hover */
+.badge-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.badge-shimmer::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+  transition: left 0.5s ease;
+}
+.badge-shimmer:hover::after {
+  left: 100%;
+}
+
+/* Empty state illustration */
+.empty-state {
+  background-image: radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.05) 0%, transparent 70%);
+}
+
+/* Mobile-friendly touch targets */
+@media (max-width: 640px) {
+  button, a, select, input[type="submit"] {
+    min-height: 44px;
+  }
+}
+
+/* Print styles */
+@media print {
+  header, footer, .no-print { display: none !important; }
+  main { max-width: 100% !important; padding: 0 !important; }
+  .shadow-card, .shadow-elevated, .shadow-soft { box-shadow: none !important; }
 }

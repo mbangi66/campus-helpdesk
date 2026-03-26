@@ -1,21 +1,43 @@
 {% extends "base.html" %}
-{% block title %}Edit Article · Knowledge Base{% endblock %}
+{% block title %}Edit Article - Knowledge Base{% endblock %}
 {% block content %}
-<div class="max-w-2xl">
-  <h1 class="text-xl font-semibold mb-4">Edit Article</h1>
-  <form method="POST" class="bg-white rounded-2xl shadow-soft p-6 space-y-4">
-    <div>
-      <label class="block text-sm font-medium mb-1">Title</label>
-      <input name="title" value="{{ article[1] }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2" />
+<div class="max-w-2xl mx-auto">
+  <nav class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-6">
+    <a href="{{ url_for('kb') }}" class="hover:text-gray-900 dark:hover:text-gray-200 transition-colors">Knowledge Base</a>
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    <span class="text-gray-900 dark:text-gray-100 font-medium">Edit Article</span>
+  </nav>
+
+  <div class="bg-white dark:bg-surface-800 rounded-2xl shadow-card border border-gray-200/60 dark:border-gray-700/40 overflow-hidden">
+    <div class="px-6 py-5 border-b border-gray-200 dark:border-gray-700">
+      <h1 class="text-xl font-bold">Edit Article</h1>
     </div>
-    <div>
-      <label class="block text-sm font-medium mb-1">Content</label>
-      <textarea name="content" rows="12" class="w-full rounded-lg border border-gray-300 px-3 py-2">{{ article[2] }}</textarea>
-    </div>
-    <div class="flex justify-end gap-2">
-      <a href="{{ url_for('kb') }}" class="px-3 py-2 rounded-lg border text-sm">Cancel</a>
-      <button class="bg-gray-900 hover:bg-black text-white rounded-lg px-4 py-2">Update</button>
-    </div>
-  </form>
+
+    <form method="POST" class="p-6 space-y-5">
+      <div>
+        <label class="block text-sm font-medium mb-1.5">Title <span class="text-red-500">*</span></label>
+        <input name="title" value="{{ art.title }}" required
+               class="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-surface-900 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-shadow" />
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1.5">Category</label>
+        <select name="category"
+                class="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-surface-900 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent">
+          {% for cat in ['General', 'IT Support', 'Academics', 'Accounts', 'Hostel'] %}
+          <option {% if art.category == cat %}selected{% endif %}>{{ cat }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1.5">Content</label>
+        <textarea name="content" rows="14"
+                  class="w-full rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-surface-900 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-shadow resize-y">{{ art.content }}</textarea>
+      </div>
+      <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+        <a href="{{ url_for('kb') }}" class="px-5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-600 text-sm font-medium text-center hover:bg-gray-50 dark:hover:bg-surface-700 transition-colors">Cancel</a>
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-gray-900 dark:bg-gray-100 dark:text-gray-900 hover:bg-black dark:hover:bg-white text-white font-medium text-sm transition-colors">Update Article</button>
+      </div>
+    </form>
+  </div>
 </div>
 {% endblock %}

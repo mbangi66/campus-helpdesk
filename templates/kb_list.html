@@ -1,29 +1,64 @@
 {% extends "base.html" %}
-{% block title %}Knowledge Base · Campus Helpdesk{% endblock %}
+{% block title %}Knowledge Base - Campus Helpdesk{% endblock %}
 {% block content %}
-<div class="flex items-center justify-between mb-4">
-  <h1 class="text-xl font-semibold">Knowledge Base</h1>
-  {% if role in ['admin','agent'] %}
-  <a href="{{ url_for('kb_new') }}" class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg px-3 py-2 text-sm">New Article</a>
+
+<!-- Page header -->
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+  <div>
+    <h1 class="text-2xl font-bold">Knowledge Base</h1>
+    <p class="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Find answers to common questions</p>
+  </div>
+  {% if session.get('role') in ['admin','agent'] %}
+  <a href="{{ url_for('kb_new') }}"
+     class="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white rounded-xl px-5 py-2.5 text-sm font-medium shadow-lg shadow-brand-600/20 transition-all sm:w-auto w-full">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+    New Article
+  </a>
   {% endif %}
 </div>
-<div class="bg-white rounded-2xl shadow-soft p-6">
-  {% if articles %}
-    <ul class="divide-y divide-gray-100">
-      {% for a in articles %}
-      <li class="py-3 flex items-center justify-between">
-        <div>
-          <div class="font-medium">{{ a[1] }}</div>
-          <div class="text-xs text-gray-500">{{ a[3] }}</div>
-        </div>
-        {% if role in ['admin','agent'] %}
-          <a href="{{ url_for('kb_edit', aid=a[0]) }}" class="text-brand-700 hover:underline text-sm">Edit</a>
-        {% endif %}
-      </li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p class="text-sm text-gray-500">No articles yet.</p>
-  {% endif %}
+
+<!-- Search -->
+<form method="GET" action="{{ url_for('kb') }}" class="mb-6">
+  <div class="relative max-w-lg">
+    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+      <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    </div>
+    <input type="text" name="q" value="{{ q or '' }}" placeholder="Search articles..."
+           class="w-full pl-12 pr-4 py-3 rounded-2xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-surface-800 shadow-card focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-shadow text-sm">
+  </div>
+</form>
+
+<!-- Articles grid -->
+{% if articles %}
+<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+  {% for a in articles %}
+  <div class="bg-white dark:bg-surface-800 rounded-2xl shadow-card border border-gray-200/60 dark:border-gray-700/40 p-5 card-hover stagger-item flex flex-col">
+    <div class="flex items-start justify-between gap-2 mb-3">
+      <div class="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-900/20 flex items-center justify-center shrink-0">
+        <svg class="w-5 h-5 text-brand-600 dark:text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      </div>
+      {% if a.category %}
+      <span class="inline-flex items-center rounded-lg bg-gray-100 dark:bg-gray-700/40 px-2 py-0.5 text-xs text-gray-600 dark:text-gray-400">{{ a.category }}</span>
+      {% endif %}
+    </div>
+    <h3 class="font-semibold text-gray-900 dark:text-gray-100 mb-1">{{ a.title }}</h3>
+    <p class="text-xs text-gray-500 dark:text-gray-400 mt-auto pt-3">{{ a.created_at[:10] if a.created_at else '' }}</p>
+    {% if session.get('role') in ['admin','agent'] %}
+    <div class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+      <a href="{{ url_for('kb_edit', aid=a.id) }}" class="text-brand-600 dark:text-brand-400 text-sm font-medium hover:underline">Edit article</a>
+    </div>
+    {% endif %}
+  </div>
+  {% endfor %}
 </div>
+{% else %}
+<div class="bg-white dark:bg-surface-800 rounded-2xl shadow-card border border-gray-200/60 dark:border-gray-700/40 p-16 text-center empty-state">
+  <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mx-auto mb-4">
+    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+  </div>
+  <p class="text-gray-500 dark:text-gray-400 font-medium">No articles yet</p>
+  <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Knowledge base articles will appear here</p>
+</div>
+{% endif %}
+
 {% endblock %}
